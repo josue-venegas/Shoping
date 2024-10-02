@@ -1,5 +1,7 @@
 {
-  "helloWorld": "¡Hola, mundo!",
+  "databaseConnected": "Conectado a la base de datos",
+  "databaseError": "Error conectando a la base de datos",
+  "serverStarted": "Servidor iniciado en el puerto",
   "userExists": "El usuario ya existe",
   "noToken": "Token no proporcionado",
   "invalidToken": "Token inválido",
@@ -10,6 +12,7 @@
   "passwordNumber": "La contraseña debe contener al menos un número",
   "passwordCharacter": "La contraseña debe contener al menos un carácter especial",
   "internalServerError": "Error interno del servidor",
+  "forbidden": "Acceso prohibido",
   "invalidCredentials": "Credenciales inválidas",
   "loginSuccess": "Inicio de sesión exitoso",
   "logoutSuccess": "Cierre de sesión exitoso",

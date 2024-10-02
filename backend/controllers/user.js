@@ -4,9 +4,10 @@ const User = require('../models/user');
 const getUsers = async (req, res) => {
     try {
         const users = await User.find();
-        res.status(201).json({ message: users });
+        return res.status(200).json({ message: users });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -24,11 +25,50 @@ const getUserById = async (req, res) => {
         if (req.user.role !== 'Admin' && req.user.email !== user.email) {
             return res.status(403).json({ error: req.i18n.t('forbidden') });
         }
-        res.status(201).json({ message: user });
+        return res.status(200).json({ message: user });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
+
+// Create a new user
+const createUser = async (req, res) => {
+    try {
+        // Get user input
+        const { email, password } = req.body;
+        
+        // Check if the user already exists
+        const user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ error: req.i18n.t('userExists') });
+        }
+
+        // Check if the email is valid
+        if (!email.includes('@')) {
+            return res.status(400).json({ error: req.i18n.t('invalidEmail') });
+        }
+
+        // Check if the password is strong
+        if (password.length < 6) {
+            return res.status(400).json({ error: req.i18n.t('passwordLength') });
+        } else if (password === password.toLowerCase()) {
+            return res.status(400).json({ error: req.i18n.t('passwordUppercase') });
+        } else if (!/\d/.test(password)) {
+            return res.status(400).json({ error: req.i18n.t('passwordNumber') });
+        } else if (!/[!@#$%^&*]/.test(password)) {
+            return res.status(400).json({ error: req.i18n.t('passwordCharacter') });
+        }
+
+        // Save the user to the database in MongoDB
+        const newUser = new User(req.body);
+        await newUser.save();
+        return res.status(201).json({ message: req.i18n.t('userCreated') });
+    } catch (error) {
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
+    }
+};
 
 // Update a user
 // An user can edit only his own profile
@@ -44,10 +84,10 @@ const updateUser = async (req, res) => {
         if (req.user.role !== 'Admin' && req.user.email !== user.email) {
             return res.status(403).json({ error: req.i18n.t('forbidden') });
         }
-        res.status(201).json({ message: req.i18n.t('userUpdated') });
-    }
-    catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        return res.status(200).json({ message: req.i18n.t('userUpdated') });
+    } catch (error) {
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -65,15 +105,17 @@ const deleteUser = async (req, res) => {
         if (req.user.role !== 'Admin' && req.user.email !== user.email) {
             return res.status(403).json({ error: req.i18n.t('forbidden') });
         }
-        res.status(201).json({ message: req.i18n.t('userDeleted') });
+        return res.status(200).json({ message: req.i18n.t('userDeleted') });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
 module.exports = {
     getUsers,
     getUserById,
+    createUser,
     updateUser,
     deleteUser
 };

@@ -4,9 +4,10 @@ const Category = require('../models/category');
 const getCategories = async (req, res) => {
     try {
         const categories = await Category.find();
-        res.status(201).json({ message: categories });
+        return res.status(200).json({ message: categories });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -17,9 +18,10 @@ const getCategoryById = async (req, res) => {
         if (!category) {
             return res.status(404).json({ error: req.i18n.t('categoryNotFound') });
         }
-        res.status(201).json({ message: category });
+        return res.status(200).json({ message: category });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -28,9 +30,10 @@ const createCategory = async (req, res) => {
     try {
         const newCategory = new Category(req.body);
         await newCategory.save();
-        res.status(201).json({ message: req.i18n.t('categoryCreated') });
+        return res.status(201).json({ message: req.i18n.t('categoryCreated') });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -41,10 +44,10 @@ const updateCategory = async (req, res) => {
         if (!category) {
             return res.status(404).json({ error: req.i18n.t('categoryNotFound') });
         }
-        res.status(201).json({ message: req.i18n.t('categoryUpdated') });
-    }
-    catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        return res.status(200).json({ message: req.i18n.t('categoryUpdated') });
+    } catch (error) {
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -55,9 +58,10 @@ const deleteCategory = async (req, res) => {
         if (!category) {
             return res.status(404).json({ error: req.i18n.t('categoryNotFound') });
         }
-        res.status(201).json({ message: req.i18n.t('categoryDeleted') });
+        return res.status(200).json({ message: req.i18n.t('categoryDeleted') });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 

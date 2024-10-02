@@ -4,9 +4,10 @@ const Product = require('../models/product');
 const getProducts = async (req, res) => {
     try {
         const products = await Product.find();
-        res.json(products);
+        return res.status(200).json({ message: products });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -17,9 +18,10 @@ const getProductById = async (req, res) => {
         if (!product) {
             return res.status(404).json({ error: req.i18n.t('productNotFound') });
         }
-        res.json(product);
+        return res.status(200).json({ message: product });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -28,9 +30,10 @@ const createProduct = async (req, res) => {
     try {
         const newProduct = new Product(req.body);
         await newProduct.save();
-        res.status(201).json({ message: req.i18n.t('productCreated') });
+        return res.status(201).json({ message: req.i18n.t('productCreated') });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -41,10 +44,10 @@ const updateProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ error: req.i18n.t('productNotFound') });
         }
-        res.json({ message: req.i18n.t('productUpdated') });
-    }
-    catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        return res.status(200).json({ message: req.i18n.t('productUpdated') });
+    } catch (error) {
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -55,9 +58,10 @@ const deleteProduct = async (req, res) => {
         if (!product) {
             return res.status(404).json({ error: req.i18n.t('productNotFound') });
         }
-        res.json({ message: req.i18n.t('productDeleted') });
+        return res.status(200).json({ message: req.i18n.t('productDeleted') });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 

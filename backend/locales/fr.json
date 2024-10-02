@@ -1,5 +1,7 @@
 {
-  "helloWorld": "Bonjour, le monde !",
+  "databaseConnected": "Connecté à la base de données",
+  "databaseError": "Erreur de connexion à la base de données",
+  "serverStarted": "Serveur démarré sur le port",
   "userExists": "L'utilisateur existe déjà",
   "noToken": "Jeton non fourni",
   "invalidToken": "Jeton invalide",
@@ -10,6 +12,7 @@
   "passwordNumber": "Le mot de passe doit contenir au moins un chiffre",
   "passwordCharacter": "Le mot de passe doit contenir au moins un caractère spécial",
   "internalServerError": "Erreur interne du serveur",
+  "forbidden": "Accès interdit",
   "invalidCredentials": "Identifiants invalides",
   "loginSuccess": "Connexion réussie",
   "logoutSuccess": "Déconnexion réussie",

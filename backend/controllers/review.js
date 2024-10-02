@@ -4,9 +4,10 @@ const Review = require('../models/review');
 const getReviews = async (req, res) => {
     try {
         const reviews = await Review.find();
-        res.status(201).json({ message: reviews });
+        return res.status(200).json({ message: reviews });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -17,9 +18,10 @@ const getReviewById = async (req, res) => {
         if (!review) {
             return res.status(404).json({ error: req.i18n.t('reviewNotFound') });
         }
-        res.status(201).json({ message: review });
+        return res.status(200).json({ message: review });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -28,9 +30,10 @@ const createReview = async (req, res) => {
     try {
         const newReview = new Review(req.body);
         await newReview.save();
-        res.status(201).json({ message: req.i18n.t('reviewCreated') });
+        return res.status(201).json({ message: req.i18n.t('reviewCreated') });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -48,10 +51,10 @@ const updateReview = async (req, res) => {
         if (req.user.role !== 'Admin' && req.user.email !== user.email) {
             return res.status(403).json({ error: req.i18n.t('forbidden') });
         }
-        res.status(201).json({ message: req.i18n.t('reviewUpdated') });
-    }
-    catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        return res.status(200).json({ message: req.i18n.t('reviewUpdated') });
+    } catch (error) {
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 
@@ -69,9 +72,10 @@ const deleteReview = async (req, res) => {
         if (req.user.role !== 'Admin' && req.user.email !== user.email) {
             return res.status(403).json({ error: req.i18n.t('forbidden') });
         }
-        res.status(201).json({ message: req.i18n.t('reviewDeleted') });
+        return res.status(200).json({ message: req.i18n.t('reviewDeleted') });
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+        console.error(req.i18n.t('internalServerError'), error.message);
+        return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }
 }
 

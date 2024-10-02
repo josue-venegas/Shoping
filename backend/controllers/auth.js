@@ -3,15 +3,81 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const User = require('../models/user');
 
-const helloworld = async (req, res) => {
+// Generate tokens
+const generateAccessAndRefreshTokens = async (userId) => {
     try {
-        // Asegúrate de que se utiliza req.i18n para acceder a la instancia de i18next
-        const message = req.i18n.t('helloWorld');
-        res.json({ message });
+      // Find the user by ID in the database
+      const user = await User.findById(userId);
+  
+      // Generate an access token and a refresh token
+      const accessToken = user.generateAccessToken();
+      const refreshToken = user.generateRefreshToken();
+  
+      // Save the refresh token to the user in the database
+      user.refreshToken = refreshToken;
+      await user.save({ validateBeforeSave: false });
+  
+      // Return the generated tokens
+      return { accessToken, refreshToken };
     } catch (error) {
-        res.status(500).json({ error: req.i18n.t('internalServerError') });
+      // Handle any errors that occur during the process
+      throw new Error(error.message);
     }
-}
+};
+
+// Refresh tokens
+const refreshAccessToken = async (req, res) => {
+    // Retrieve the refresh token from cookies or request body
+    const incomingRefreshToken =
+      req.cookies.refreshToken || req.body.refreshToken;
+  
+    // If no refresh token is present, deny access with a 401 Unauthorized status
+    if (!incomingRefreshToken) {
+      return res.status(401).json({ error: req.i18n.t('noToken') });
+    }
+  
+    try {
+      // Verify the incoming refresh token using the secret key
+      const decodedToken = jwt.verify(
+        incomingRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+      );
+  
+      // Find the user associated with the refresh token
+      const user = await User.findById(decodedToken?._id);
+  
+      // If the user isn't found, deny access with a 404 Not Found status
+      if (!user) {
+        return res.status(404).json({ error: req.i18n.t('userNotFound') });
+      }
+  
+      // If the stored refresh token doesn't match the incoming one, deny access with a 401 Unauthorized status
+      if (user?.refreshToken !== incomingRefreshToken) {
+        return res.status(401).json({ error: req.i18n.t('invalidToken') });
+      }
+  
+      // Set options for cookies
+      const options = {
+        httpOnly: true,
+        secure: true, // Enable in a production environment with HTTPS
+      };
+  
+      // Generate new access and refresh tokens for the user
+      const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+        user._id
+      );
+  
+      // Set the new tokens in cookies
+      return res
+        .status(200)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json({ accessToken, refreshToken, message: req.i18n.t('tokenRefreshed') });
+    } catch (error) {
+      // Handle any errors during token refresh with a 500 Internal Server Error status
+      return res.status(500).json({ error: error.message });
+    }
+  };
 
 // Signup controller
 const signup = async (req, res) => {
@@ -44,8 +110,8 @@ const signup = async (req, res) => {
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user object
-        const newUser = new User({
+        // Save the user to the database in MongoDB
+        const newUser = await User.create({
             name,
             email,
             password: hashedPassword,
@@ -54,9 +120,6 @@ const signup = async (req, res) => {
             city,
             country
         });
-
-        // Save the user to the database in MongoDB
-        await newUser.save();
 
         // Return a success message
         res.status(201).json({ message: req.i18n.t('userCreated') });
@@ -67,37 +130,68 @@ const signup = async (req, res) => {
 
 // Login controller
 const login = async (req, res) => {
-    console.log("Login controller");
     try {
-        // Obtener la entrada del usuario
+        // Get user input
         const { email, password } = req.body;
 
-        console.log("Email: ", email);
-
-        // Encontrar al usuario en la base de datos
+        // Check if the user exists
         const user = await User.findOne({ email });
-
         if (!user) {
             return res.status(401).json({ error: req.i18n.t('invalidCredentials') });
         }
 
-        // Comparar contraseñas
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
+        // Check if the password is correct
+        const isPasswordValid = await user.isPasswordCorrect(password);
         if (!isPasswordValid) {
             return res.status(401).json({ error: req.i18n.t('invalidCredentials') });
         }
 
-        // Generar token JWT incluyendo el rol
-        const token = jwt.sign({ email: user.email, role: user.role }, process.env.JWT_SECRET);
+        // Generate access and refresh tokens
+        const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(
+            user._id
+        );
 
-        // Devolver el token
-        res.status(201).json({ message: token });
+        // Set options for cookies
+        const options = {
+            httpOnly: true,
+            secure: false, // Enable in a production environment with HTTPS
+        };
+        
+        // Return the token and set the refresh token in a cookie
+        res
+        .status(201)
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", refreshToken, options)
+        .json({ message: req.i18n.t('loginSuccess') });
     } catch (error) {
         res.status(500).json({ error: req.i18n.t('internalServerError') });
     }
 };
 
+// Logout controller
+const logout = async (req, res) => {
+    // Remove the refresh token from the user's information
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: { refreshToken: undefined },
+      },
+      { new: true }
+    );
+  
+    // Set options for cookies
+    const options = {
+      httpOnly: true,
+      secure: false, // Enable in a production environment with HTTPS
+    };
+  
+    // Clear the access and refresh tokens in cookies
+    return res
+      .status(200)
+      .cookie("accessToken", options)
+      .cookie("refreshToken", options)
+      .json({ message: req.i18n.t('logoutSuccess') });
+  };
 
 // Password recovery controller
 const recoverPassword = async (req, res) => {
@@ -105,15 +199,16 @@ const recoverPassword = async (req, res) => {
         // Get user input
         const { email } = req.body;
 
-        // Find the user in the database
+        // Check if the user exists
         const user = await User.findOne({ email });
-
         if (!user) {
             return res.status(404).json({ error: req.i18n.t('userNotFound') });
         }
 
         // Generate password reset token
-        const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const resetToken = jwt.sign({ email }, process.env.RESET_TOKEN_SECRET, {
+            expiresIn: '1h',
+        });
 
         // Send password reset email with the resetToken
         const transporter = nodemailer.createTransport({
@@ -129,7 +224,7 @@ const recoverPassword = async (req, res) => {
             from: 'your_email@gmail.com',
             to: email,
             subject: req.i18n.t('passwordRecoveryEmailSubject'),
-            text: `${req.i18n.t('passwordRecoveryEmailText')} http://yourfrontend.com/reset-password/${resetToken}`
+            text: `${req.i18n.t('passwordRecoveryEmailText')} http://localhost:4200/reset-password/${resetToken}`
         };
 
         await transporter.sendMail(mailOptions);
@@ -141,8 +236,9 @@ const recoverPassword = async (req, res) => {
 };
 
 module.exports = {
-    helloworld,
     signup,
     login,
+    logout,
     recoverPassword,
+    refreshAccessToken,
 };

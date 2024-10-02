@@ -7,39 +7,41 @@ const reviewController = require('../controllers/review');
 const express = require('express');
 const router = express.Router();
 
-// Middleware para verificar el rol
-const authorizeRole = (role) => {
+// Middleware to check the role of the user
+const hasToBe = (role) => {
     return (req, res, next) => {
         if (req.user.role !== role) {
-            return res.sendStatus(403); // Forbidden
+            return res.status(403).json({ error: req.i18n.t('invalidRole') });
         }
         next();
     };
 };
 
-router.get('/hello', authController.helloworld);
+// Auth routes
+router.post('/refresh-token', authController.refreshAccessToken);
+router.post('/logout', authController.logout);
 
-// Rutas para CRUD de usuarios
-router.get('/users', authorizeRole('Admin'), userController.getUsers);
+// CRUD users
+router.get('/users', hasToBe('Admin'), userController.getUsers);
 router.get('/users/:id', userController.getUserById);
 router.put('/users/:id', userController.updateUser);
 router.delete('/users/:id', userController.deleteUser);
 
-// Rutas para CRUD de categorías
+// CRUD categories
 router.get('/categories', categoryController.getCategories);
 router.get('/categories/:id', categoryController.getCategoryById);
-router.post('/categories', authorizeRole('Admin'), categoryController.createCategory);
-router.put('/categories/:id', authorizeRole('Admin'), categoryController.updateCategory);
-router.delete('/categories/:id', authorizeRole('Admin'), categoryController.deleteCategory);
+router.post('/categories', hasToBe('Admin'), categoryController.createCategory);
+router.put('/categories/:id', hasToBe('Admin'), categoryController.updateCategory);
+router.delete('/categories/:id', hasToBe('Admin'), categoryController.deleteCategory);
 
-// Rutas para CRUD de productos
+// CRUD products
 router.get('/products', productController.getProducts);
 router.get('/products/:id', productController.getProductById);
-router.post('/products', authorizeRole('Admin'), productController.createProduct);
-router.put('/products/:id', authorizeRole('Admin'), productController.updateProduct);
-router.delete('/products/:id', authorizeRole('Admin'), productController.deleteProduct);
+router.post('/products', hasToBe('Admin'), productController.createProduct);
+router.put('/products/:id', hasToBe('Admin'), productController.updateProduct);
+router.delete('/products/:id', hasToBe('Admin'), productController.deleteProduct);
 
-// Rutas para CRUD de reseñas
+// CRUD reviews
 router.get('/reviews', reviewController.getReviews);
 router.get('/reviews/:id', reviewController.getReviewById);
 router.post('/reviews', reviewController.createReview);

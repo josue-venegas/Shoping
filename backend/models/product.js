@@ -8,7 +8,7 @@ const productSchema = new mongoose.Schema({
     images:             [{ type: String }],
     brand:              { type: String, default: '' },
     price:              { type: Number, default: 0 },
-    category:           { type: mongoose.Schema.Types.ObjectId, ref: 'ProductCategory', required: true },
+    categories:         [{ type: mongoose.Schema.Types.ObjectId, ref: 'ProductCategory', required: true }],
     isFeatured:         { type: Boolean, default: false },
     isStockLimited:     { type: Boolean, default: false },
     countInStock:       { type: Number, required: false, min: 0, max: 255 },

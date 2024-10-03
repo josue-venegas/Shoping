@@ -45,10 +45,7 @@ const refreshAccessToken = async (req, res) => {
         .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json({ message: req.i18n.t('tokenRefreshed'), 
-                accessToken: accessToken,
-                refreshToken: refreshToken
-              });
+        .json({ message: req.i18n.t('tokenRefreshed') });
     } catch (error) {
       return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
     }

@@ -39,10 +39,7 @@ const login = async (req, res) => {
         .status(200)
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options)
-        .json({ message: req.i18n.t('loginSuccess'), 
-                accessToken: accessToken,
-                refreshToken: refreshToken
-              });
+        .json({ message: req.i18n.t('loginSuccess') });
     } catch (error) {
         console.error(req.i18n.t('internalServerError'), error.message);
         return res.status(500).json({ error: `${req.i18n.t('internalServerError')}: ${error.message}` });
@@ -71,10 +68,7 @@ const logout = async (req, res) => {
         .status(200)
         .cookie("accessToken", "", options)
         .cookie("refreshToken", "", options)
-        .json({ message: req.i18n.t('logoutSuccess'), 
-                accessToken: "",
-                refreshToken: ""
-              });
+        .json({ message: req.i18n.t('logoutSuccess') });
   };
 
 // Password recovery controller

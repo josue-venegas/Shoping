@@ -2,7 +2,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const express = require('express');
 const i18next = require('i18next');
-const verifyJWT = require('./middlewares/tokenMiddleware');
+const verifyToken = require('./middlewares/tokenMiddleware');
 const public_routes = require('./routes/public_routes');
 const private_routes = require('./routes/private_routes');
 
@@ -19,7 +19,7 @@ require('./middlewares/i18nextMiddleware')(app);
 app.use('/api', public_routes);
 
 // Private routes
-app.use('/api', verifyJWT, private_routes);
+app.use('/api', verifyToken, private_routes);
 
 // Connect to the database
 mongoose.connect(process.env.MONGODB_URI).then(() => {

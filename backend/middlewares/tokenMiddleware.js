@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 
 // Middleware to check if the user is authenticated
-const verifyJWT = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
     // Look for the token in cookies or headers
     const token =
       req.cookies?.accessToken ||
@@ -11,7 +11,7 @@ const verifyJWT = async (req, res, next) => {
         return res.status(401).json({ error: req.i18n.t('noToken') });
     }
   
-    // Check if the token is valid using a secret key
+    // Verify if the token is valid
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
   
     // Get the user linked to the token
@@ -27,4 +27,4 @@ const verifyJWT = async (req, res, next) => {
     next();    
 };
 
-module.exports = verifyJWT;
+module.exports = verifyToken;

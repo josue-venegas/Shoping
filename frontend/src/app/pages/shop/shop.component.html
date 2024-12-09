@@ -1,0 +1,29 @@
+  <!-- Carousel -->
+  <p-carousel [value]="highlights" [numVisible]="1" [numScroll]="1" [circular]="true" autoplayInterval="3000">
+    <ng-template let-promotion pTemplate="item">
+      <div class="promotion-item">
+        <img src="{{promotion.image}}" alt="{{promotion.title}}" class="carousel-image">
+        
+      </div>
+    </ng-template>
+  </p-carousel>
+  
+  <!-- Categorías -->
+  <h2>Categorías</h2>
+  <div class="category-grid">
+    <div *ngFor="let category of categories" class="category-item" (click)="navigateToCategory(category)">
+      <img src="{{category.image}}" alt="{{category.label}}" class="category-image">
+      <h3>{{category.label}}</h3>
+    </div>
+  </div>
+  
+  <!-- Últimos productos -->
+  <h2>Últimos productos</h2>
+  <div class="product-grid">
+    <div *ngFor="let product of latestProducts" class="product-item">
+      <img src="{{product.image}}" alt="{{product.name}}" class="product-image">
+      <h3>{{product.name}}</h3>
+      <p>{{product.price | currency}}</p>
+    </div>
+  </div>
+  

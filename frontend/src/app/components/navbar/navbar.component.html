@@ -1,0 +1,24 @@
+<!-- Header -->
+<p-header>
+    <div class="header">
+      <img src="assets/logo.png" alt="Logo" class="logo">
+      <input type="text" pInputText placeholder="Buscar productos y categorías" class="search-input">
+      <div class="header-buttons">
+        <button pButton label="Iniciar sesión" icon="pi pi-user"></button>
+        <button pButton label="Registrarse" icon="pi pi-user-plus"></button>
+      </div>
+    </div>
+</p-header>
+  
+  <!-- Navbar -->
+  <p-menubar [model]="menuItems" class="navbar">
+    <ng-template pTemplate="start">
+      <p-dropdown [options]="categories" optionLabel="label" placeholder="Categorías"></p-dropdown>
+    </ng-template>
+    <ng-template pTemplate="end">
+      <div class="navbar-icons">
+        <button pButton icon="pi pi-heart" class="navbar-button" routerLink="/favorites"></button>
+        <button pButton icon="pi pi-shopping-cart" class="navbar-button" routerLink="/cart"></button>
+      </div>
+    </ng-template>
+  </p-menubar>
